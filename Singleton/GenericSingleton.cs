@@ -1,33 +1,27 @@
 ﻿namespace Singleton
 {
-    public class GenericSingleton<T> : IGenericSingleton<T> where T: class
+    public abstract class GenericSingleton<T>
     {
-        private static readonly GenericSingleton<T> _genericSingleton = new GenericSingleton<T>();
-
-        private readonly List<T> _fakeDb;
-        private GenericSingleton()
+        protected GenericSingleton() 
         {
-            _fakeDb = new List<T>();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="t"></param>
-        public void Add(T t)
-        {
-            if (t != null) _fakeDb.Add(t);
-        }
+        private static T instance;
+        private static Func<T> act;
+        private static readonly object padlock = new object();
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public List<T> List()
-        {
-            return _fakeDb;
-        }
+        protected static void initializer(Func<T> action) { act = action; }
 
-        public GenericSingleton<T> GetInstance() => _genericSingleton;
+        protected static T Instance
+        {
+            get
+            {
+                lock (padlock)
+                {
+                    if (GenericSingleton<T>.instance == null) { instance = act(); }
+                    return GenericSingleton<T>.instance;
+                }
+            }
+        }
     }
 }
